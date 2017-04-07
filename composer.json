@@ -1,0 +1,14 @@
+{
+    "name": "extpoint/yii2-file",
+    "description": "Yii2 File module for POST/PUT upload and download files",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0",
+        "yiisoft/yii2": "*",
+        "extpoint/yii2-core": "*"
+    },
+    "autoload": {
+        "psr-4": {"extpoint\\yii2\\file\\": "lib"}
+    }
+}
