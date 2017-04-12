@@ -132,11 +132,27 @@ class FileModule extends Module
         return $files;
     }
 
-    public function coreUrlRules()
+    public function coreMenu()
     {
         return [
-            'file/<uid:[a-z0-9-]{36}>/<name>' => "$this->id/download/index",
+            'file' => [
+                'label' => 'Модуль загрузки и скачивания файла',
+                'visible' => false,
+                'items' => [
+                    [
+                        'url' => ["/$this->id/upload/index"],
+                        'urlRule' => "$this->id/upload",
+                    ],
+                    [
+                        'url' => ["/file/upload/editor"],
+                        'urlRule' => "$this->id/upload/editor",
+                    ],
+                    [
+                        'url' => ["/file/download/index"],
+                        'urlRule' => "$this->id/<uid:[a-z0-9-]{36}>/<name>",
+                    ],
+                ]
+            ]
         ];
     }
-
 }
