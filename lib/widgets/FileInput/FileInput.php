@@ -31,7 +31,8 @@ class FileInput extends AppWidget
 
     protected function getFiles()
     {
-        $value = $this->model{$this->attribute} ?: [];
+        $attribute = Html::getAttributeName($this->attribute);
+        $value = $this->model->{$attribute} ?: [];
         if (empty($value)) {
             return [];
         }
