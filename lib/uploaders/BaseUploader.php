@@ -48,7 +48,9 @@ class BaseUploader extends Model
      */
     public static function normalizeSize($size)
     {
-        switch (strtoupper(substr($size, -1))) {
+        $letter = strtoupper(substr($size, -1));
+        $size = (int) $size;
+        switch ($letter) {
             case 'G':
                 $size *= 1024;
             case 'M':
