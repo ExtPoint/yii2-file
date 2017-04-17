@@ -2,13 +2,13 @@
 
 namespace extpoint\yii2\file\widgets\FileInput;
 
-use app\core\base\AppWidget;
+use extpoint\yii2\base\Widget;
 use extpoint\yii2\file\models\File;
 use yii\helpers\Html;
 use yii\helpers\StringHelper;
 use yii\helpers\Url;
 
-class FileInput extends AppWidget
+class FileInput extends Widget
 {
     public $url = ['/file/upload/index'];
     public $multiple = false;
