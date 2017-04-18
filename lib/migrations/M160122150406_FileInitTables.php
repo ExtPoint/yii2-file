@@ -1,8 +1,10 @@
 <?php
 
+namespace extpoint\yii2\file\migrations;
+
 use \extpoint\yii2\base\Migration;
 
-class m160122_150406_file_init_tables extends Migration
+class M160122150406_FileInitTables extends Migration
 {
     public function up()
     {
