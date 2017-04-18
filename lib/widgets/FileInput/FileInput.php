@@ -22,6 +22,7 @@ class FileInput extends Widget
     public function run()
     {
         return $this->renderReact([
+            'reduxStateId' => $this->getId(),
             'multiple' => $this->multiple,
             'name' => Html::getInputName($this->model, $this->attribute),
             'backendUrl' => Url::to($this->url),
@@ -32,13 +33,16 @@ class FileInput extends Widget
     protected function getFiles()
     {
         $attribute = Html::getAttributeName($this->attribute);
-        $value = $this->model->{$attribute} ?: [];
+        $value = $this->model->$attribute ?: [];
         if (empty($value)) {
             return [];
         }
 
         if (is_string($value)) {
             $value = StringHelper::explode($value);
+        }
+        if (!is_array($value)) {
+            $value = [$value];
         }
 
         $value = $this->multiple ? $value : [$value[0]];

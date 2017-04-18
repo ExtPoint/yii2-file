@@ -21,6 +21,7 @@ use yii\helpers\Url;
  * @property boolean $isTemp
  * @property-read string $path
  * @property-read string $url
+ * @property-read string $previewImageUrl
  * @property-read string $downloadUrl
  * @property-read string $downloadName
  */
