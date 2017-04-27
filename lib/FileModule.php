@@ -77,7 +77,7 @@ class FileModule extends Module
 
         // Normalize and set default dir
         if ($this->filesRootPath === null) {
-            $this->filesRootPath = dirname(\Yii::$app->getRequest()->getScriptFile()) . '/assets/';
+            $this->filesRootPath = \Yii::getAlias('@webroot/assets/');
         } else {
             $this->filesRootPath = rtrim($this->filesRootPath, '/') . '/';
         }
@@ -115,6 +115,7 @@ class FileModule extends Module
             $file->attributes = ArrayHelper::merge($fileConfig, [
                 'uid' => $item['uid'],
                 'title' => $item['title'],
+                'folder' => str_replace([$this->filesRootPath, $item['name']], '', $item['path']),
                 'fileName' => $item['name'],
                 'fileMimeType' => $item['type'],
                 'fileSize' => $item['bytesTotal'],

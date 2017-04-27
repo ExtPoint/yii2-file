@@ -69,14 +69,14 @@ class BaseUploader extends Model
 
     public function upload()
     {
-        if (!$this->validate()) {
-            return false;
-        }
-
         // Create destination directory, if no exists
         if (!file_exists($this->destinationDir)) {
             mkdir($this->destinationDir, 0775, true);
             chmod($this->destinationDir, 0775);
+        }
+
+        if (!$this->validate()) {
+            return false;
         }
 
         $this->trigger(self::EVENT_BEFORE_UPLOAD);
