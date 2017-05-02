@@ -4,6 +4,7 @@ namespace extpoint\yii2\file\widgets\FileInput;
 
 use extpoint\yii2\base\Widget;
 use extpoint\yii2\file\models\File;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\StringHelper;
 use yii\helpers\Url;
@@ -15,19 +16,21 @@ class FileInput extends Widget
     public $options = [];
     public $model;
     public $attribute;
+    public $asArrayString = false;
 
     /**
      * Renders the widget.
      */
     public function run()
     {
-        return $this->renderReact([
+        return $this->renderReact(ArrayHelper::merge($this->options, [
             'reduxStateId' => $this->getId(),
             'multiple' => $this->multiple,
+            'asArrayString' => $this->asArrayString,
             'name' => Html::getInputName($this->model, $this->attribute),
             'backendUrl' => Url::to($this->url),
             'initialFiles' => $this->getFiles(),
-        ]);
+        ]));
     }
 
     protected function getFiles()
@@ -38,7 +41,7 @@ class FileInput extends Widget
             return [];
         }
 
-        if (is_string($value)) {
+        if ($this->asArrayString || is_string($value)) {
             $value = StringHelper::explode($value);
         }
         if (!is_array($value)) {
