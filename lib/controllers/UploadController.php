@@ -34,7 +34,7 @@ class UploadController extends Controller
     {
         $result = FileModule::getInstance()->upload();
         if (!isset($result['errors'])) {
-            $url = ImageMeta::findByProcessor($result[0]->uid, FileModule::PROCESSOR_NAME_ORIGINAL)->url;
+            $url = ImageMeta::findByProcessor($result[0]->id, FileModule::PROCESSOR_NAME_ORIGINAL)->url;
             return '<script>window.parent.CKEDITOR.tools.callFunction(' . Json::encode($CKEditorFuncNum) . ', ' . Json::encode($url) . ', "");</script>';
         }
     }
