@@ -14,6 +14,7 @@ class FileInput extends Widget
     public $url = ['/file/upload/index'];
     public $multiple = false;
     public $options = [];
+    public $field;
     public $model;
     public $attribute;
     public $asArrayString = false;
