@@ -21,11 +21,13 @@ class UploadController extends Controller
             ]);
         }
 
+        $processor = \Yii::$app->request->get('processor');
+
         // Send responses data
         return Json::encode(array_map(
-            function ($file) {
+            function ($file) use ($processor) {
                 /** @var \extpoint\yii2\file\models\File $file */
-                return $file->getExtendedAttributes();
+                return $file->getExtendedAttributes($processor);
             },
             $result
         ));

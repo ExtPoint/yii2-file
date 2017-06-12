@@ -121,11 +121,11 @@ class File extends Model
         return Url::to(['/file/download/index', 'uid' => $this->uid, 'name' => $this->getDownloadName()], true);
     }
 
-    public function getPreviewImageUrl()
+    public function getPreviewImageUrl($processor = null)
     {
         if (ImageMeta::isImageMimeType($this->fileMimeType)) {
             try {
-                return ImageMeta::findByProcessor($this->id, FileModule::PROCESSOR_NAME_DEFAULT)->url;
+                return ImageMeta::findByProcessor($this->id, $processor ?: FileModule::PROCESSOR_NAME_DEFAULT)->url;
             } catch (FileException $e) {
                 // @todo change mime type on error for cache
             }
@@ -214,13 +214,37 @@ class File extends Model
         parent::afterSave($insert, $changedAttributes);
     }
 
-    public function getExtendedAttributes()
+    public function getExtendedAttributes($processor = null)
     {
-        return $this->attributes + [
+        $previewImageParams = [
+            'previewImageUrl' => '',
+            'previewImageWidth' => 0,
+            'previewImageHeight' => 0,
+        ];
+
+        if (ImageMeta::isImageMimeType($this->fileMimeType)) {
+            try {
+                $imageMeta = ImageMeta::findByProcessor($this->id, $processor ?: FileModule::PROCESSOR_NAME_DEFAULT);
+            } catch (FileException $e) {
+                // @todo change mime type on error for cache
+            }
+            if (isset($imageMeta)) {
+                $previewImageParams = [
+                    'previewImageUrl' => $imageMeta->url,
+                    'previewImageWidth' => $imageMeta->width,
+                    'previewImageHeight' => $imageMeta->height,
+                ];
+            }
+        }
+
+        return array_merge(
+            $this->attributes,
+            $previewImageParams,
+            [
                 'url' => $this->getUrl(),
                 'downloadUrl' => $this->getDownloadUrl(),
-                'previewImageUrl' => $this->getPreviewImageUrl(),
                 'iconName' => $this->getIconName(),
-            ];
+            ]
+        );
     }
 }
