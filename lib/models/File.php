@@ -21,12 +21,17 @@ use yii\helpers\Url;
  * @property boolean $isTemp
  * @property-read string $path
  * @property-read string $url
- * @property-read string $previewImageUrl
  * @property-read string $downloadUrl
  * @property-read string $downloadName
  */
 class File extends Model
 {
+    public $processors = [
+        FileModule::PROCESSOR_NAME_DEFAULT
+    ];
+
+    private $_imageMetas = [];
+
     /**
      * @return string
      */
@@ -49,6 +54,22 @@ class File extends Model
     }
 
     /**
+     * @param File[] $models
+     * @param string[] $processors
+     * @return File[]
+     */
+    public static function prepareProcessors($models, $processors)
+    {
+        if (is_array($models)) {
+            $models = array_map(function ($model) use ($processors) {
+                $model->processors = $processors;
+                return $model;
+            }, $models);
+        }
+        return $models;
+    }
+
+    /**
      * @inheritdoc
      */
     public function behaviors()
@@ -56,6 +77,23 @@ class File extends Model
         return [
             UidBehavior::className(),
             TimestampBehavior::className(),
+        ];
+    }
+
+    public function fields()
+    {
+        return [
+            'id',
+            'uid',
+            'title',
+            'folder',
+            'fileName',
+            'fileMimeType',
+            'fileSize',
+            'createTime',
+            'url',
+            'downloadUrl',
+            'images',
         ];
     }
 
@@ -121,26 +159,14 @@ class File extends Model
         return Url::to(['/file/download/index', 'uid' => $this->uid, 'name' => $this->getDownloadName()], true);
     }
 
-    public function getPreviewImageUrl($processor = null)
-    {
-        if (ImageMeta::isImageMimeType($this->fileMimeType)) {
-            try {
-                return ImageMeta::findByProcessor($this->id, $processor ?: FileModule::PROCESSOR_NAME_DEFAULT)->url;
-            } catch (FileException $e) {
-                // @todo change mime type on error for cache
-            }
-        }
-        return null;
-    }
-
-    public function getIconName()
+    /*public function getIconName()
     {
         $ext = pathinfo($this->fileName, PATHINFO_EXTENSION);
         $ext = preg_replace('/[^0-9a-z_]/', '', $ext);
         $iconPath = __DIR__ . '/../../../client/images/fileIcons/' . $ext . '.png';
 
         return file_exists($iconPath) ? $ext : 'default';
-    }
+    }*/
 
     public function beforeDelete()
     {
@@ -214,37 +240,34 @@ class File extends Model
         parent::afterSave($insert, $changedAttributes);
     }
 
-    public function getExtendedAttributes($processor = null)
+    /**
+     * @param string $processor
+     * @return ImageMeta
+     */
+    public function getImageMeta($processor = FileModule::PROCESSOR_NAME_DEFAULT)
     {
-        $previewImageParams = [
-            'previewImageUrl' => '',
-            'previewImageWidth' => 0,
-            'previewImageHeight' => 0,
-        ];
+        if (!isset($this->_imageMetas[$processor])) {
+            $this->_imageMetas[$processor] = ImageMeta::findByProcessor($this->id, $processor);
+        }
+        return $this->_imageMetas[$processor];
+    }
 
+    public function getImages()
+    {
+        $images = [];
         if (ImageMeta::isImageMimeType($this->fileMimeType)) {
-            try {
-                $imageMeta = ImageMeta::findByProcessor($this->id, $processor ?: FileModule::PROCESSOR_NAME_DEFAULT);
-            } catch (FileException $e) {
-                // @todo change mime type on error for cache
-            }
-            if (isset($imageMeta)) {
-                $previewImageParams = [
-                    'previewImageUrl' => $imageMeta->url,
-                    'previewImageWidth' => $imageMeta->width,
-                    'previewImageHeight' => $imageMeta->height,
-                ];
+            foreach ($this->processors as $processor) {
+                $images[$processor] = $this->getImageMeta($processor);
             }
         }
+        return $images;
+    }
 
-        return array_merge(
-            $this->attributes,
-            $previewImageParams,
-            [
-                'url' => $this->getUrl(),
-                'downloadUrl' => $this->getDownloadUrl(),
-                'iconName' => $this->getIconName(),
-            ]
-        );
+    public function getExtendedAttributes($processor = null)
+    {
+        if ($processor) {
+            $this->processors = [$processor];
+        }
+        return $this->toArray();
     }
 }
