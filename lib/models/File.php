@@ -54,9 +54,9 @@ class File extends Model
     }
 
     /**
-     * @param File[] $models
+     * @param File[]|File $models
      * @param string[] $processors
-     * @return File[]
+     * @return File[]|File
      */
     public static function prepareProcessors($models, $processors)
     {
@@ -65,6 +65,8 @@ class File extends Model
                 $model->processors = $processors;
                 return $model;
             }, $models);
+        } elseif ($models instanceof File) {
+            $models->processors = $processors;
         }
         return $models;
     }

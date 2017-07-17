@@ -36,6 +36,16 @@ class ImageMeta extends Model
         ]);
     }
 
+    public function fields()
+    {
+        return [
+            'id',
+            'width',
+            'height',
+            'url',
+        ];
+    }
+
     /**
      * @return string
      */
