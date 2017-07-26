@@ -125,7 +125,7 @@ class File extends Model
      */
     public function getRelativePath()
     {
-        return $this->folder . $this->fileName;
+        return ltrim($this->folder, '/') . $this->fileName;
     }
 
     /**
