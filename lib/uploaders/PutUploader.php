@@ -104,12 +104,24 @@ class PutUploader extends BaseUploader
             return false;
         }
 
+        // Check mime type from header
+        if (is_array($this->mimeTypes) && !in_array($file['type'], $this->mimeTypes)) {
+            $this->addError('files', \Yii::t('app', 'Incorrect file format.'));
+            return false;
+        }
+
         // Upload file content
         file_put_contents(
             $filePath,
             fopen('php://input', 'r'),
             $this->contentRange && $this->contentRange['start'] > 0 ? FILE_APPEND : 0
         );
+
+        // Check real mime type from file
+        if (is_array($this->mimeTypes) && !in_array(static::getFileMimeType($filePath), $this->mimeTypes)) {
+            $this->addError('files', \Yii::t('app', 'Incorrect file format.'));
+            return false;
+        }
 
         // Get in from file, if no exists
         $file['bytesTotal'] = $file['bytesTotal'] ?: filesize($filePath);

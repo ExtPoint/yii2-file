@@ -12,6 +12,7 @@ class BaseUploader extends Model
     public $destinationDir;
     public $maxFileSize = '200M';
     public $maxRequestSize = '200M';
+    public $mimeTypes;
     public $files = [];
 
     public function init()
@@ -103,5 +104,14 @@ class BaseUploader extends Model
     protected function uploadInternal()
     {
         return true;
+    }
+
+    public static function getFileMimeType($path)
+    {
+        $f = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($f, $path);
+        finfo_close($f);
+
+        return $mimeType;
     }
 }

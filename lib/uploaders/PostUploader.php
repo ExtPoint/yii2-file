@@ -76,6 +76,10 @@ class PostUploader extends BaseUploader
 
             $file['path'] = $this->getFilePath($file['name']);
 
+            if (is_array($this->mimeTypes) && !in_array(static::getFileMimeType($file['original']['tmp_name']), $this->mimeTypes)) {
+                $this->addError('files', \Yii::t('app', 'Incorrect file format.'));
+            }
+
             // Move uploaded file
             if (!copy($file['original']['tmp_name'], $file['path'])) {
                 $this->addError('files', \Yii::t('app', 'Cannot move uploaded file.'));

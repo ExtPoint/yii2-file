@@ -261,6 +261,19 @@ class File extends Model
             foreach ($this->processors as $processor) {
                 $images[$processor] = $this->getImageMeta($processor);
             }
+        } elseif (in_array(FileModule::PROCESSOR_NAME_DEFAULT, $this->processors)) {
+            $iconsPath = FileModule::getInstance()->iconsRootPath;
+            $iconsUrl = FileModule::getInstance()->iconsRootUrl;
+            if ($iconsPath && $iconsUrl) {
+                $iconName = pathinfo($this->fileName, PATHINFO_EXTENSION) . '.png';
+                $images[FileModule::PROCESSOR_NAME_DEFAULT] = [
+                    'url' => file_exists($iconsPath . '/' . $iconName)
+                        ? $iconsUrl . '/' . $iconName
+                        : $iconsUrl . '/txt.png',
+                    'width' => 64,
+                    'height' => 64,
+                ];
+            }
         }
         return $images;
     }

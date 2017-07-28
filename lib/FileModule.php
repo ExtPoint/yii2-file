@@ -37,6 +37,18 @@ class FileModule extends Module
     public $filesRootUrl;
 
     /**
+     * Absolute url to file icons directory (if exists)
+     * @var string
+     */
+    public $iconsRootUrl;
+
+    /**
+     * Absolute path to file icons directory (if exists)
+     * @var string
+     */
+    public $iconsRootPath;
+
+    /**
      * The name of the x-sendfile header
      * @var string
      */
@@ -85,6 +97,13 @@ class FileModule extends Module
             $this->filesRootUrl = \Yii::getAlias('@web', false) . '/assets/';
         } else {
             $this->filesRootUrl = rtrim($this->filesRootUrl, '/') . '/';
+        }
+
+        if ($this->iconsRootUrl) {
+            $this->iconsRootUrl = \Yii::getAlias($this->iconsRootUrl);
+        }
+        if ($this->iconsRootPath) {
+            $this->iconsRootPath = \Yii::getAlias($this->iconsRootPath);
         }
     }
 
