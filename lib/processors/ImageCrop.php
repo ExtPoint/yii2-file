@@ -49,7 +49,7 @@ class ImageCrop extends BaseFileProcessor
 
         $bool = true;
         $src = imagecreatefromstring($imageContent);
-        $extension = pathinfo($this->filePath, PATHINFO_EXTENSION);
+        $extension = strtolower(pathinfo($this->filePath, PATHINFO_EXTENSION));
 
         // Auto-rotate
         if ($extension === 'jpg' || $extension === 'jpeg') {
