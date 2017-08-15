@@ -222,7 +222,7 @@ class File extends Model
     public function afterSave($insert, $changedAttributes)
     {
         // Create ImageMeta for images
-        if ($insert && ImageMeta::isImageMimeType($this->fileMimeType)) {
+        if ($insert && $this->isImage()) {
 
             // Create instance
             $imageMeta = new ImageMeta([
@@ -257,7 +257,7 @@ class File extends Model
     public function getImages()
     {
         $images = [];
-        if (ImageMeta::isImageMimeType($this->fileMimeType)) {
+        if ($this->isImage()) {
             foreach ($this->processors as $processor) {
                 $images[$processor] = $this->getImageMeta($processor);
             }
@@ -284,5 +284,32 @@ class File extends Model
             $this->processors = [$processor];
         }
         return $this->toArray();
+    }
+
+    /**
+     * Checks if the file's image is of the given size or ratio
+     *
+     * @param array(integer, integer) $fixedSize
+     * @return bool
+     */
+    public function checkImageFixedSize($fixedSize)
+    {
+        if (!$this->isImage()) {
+            return true;
+        }
+
+        $originalImageMeta = $this->getImageMeta(FileModule::PROCESSOR_NAME_ORIGINAL);
+        $originalImageMeta->checkFixedSize((int) $fixedSize[0], (int) $fixedSize[1]);
+
+        if ($originalImageMeta->hasErrors()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isImage()
+    {
+        return ImageMeta::isImageMimeType($this->fileMimeType);
     }
 }

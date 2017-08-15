@@ -203,4 +203,24 @@ class ImageMeta extends Model
         return $imageMeta;
     }
 
+    /**
+     * @param integer $width
+     * @param integer $height
+     */
+    public function checkFixedSize($width, $height)
+    {
+        if (!$width || !$height) {
+            $this->addError('id', 'Fixed height or width must be greater than 0');
+            return;
+        }
+
+        if ($this->width < $width && $this->height < $height) {
+            $this->addError('id', 'Image is smaller that the given fixed size');
+        }
+
+        if ((int) floor($this->width/$this->height) !== (int) floor($width/$height)) {
+            $this->addError('id', 'Image has different height/width ratio than the given size');
+        }
+    }
+
 }
