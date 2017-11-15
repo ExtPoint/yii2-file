@@ -20,7 +20,7 @@ class PostUploader extends BaseUploader
                 'title' => $file['name'],
                 'bytesUploaded' => $file['size'],
                 'bytesTotal' => $file['size'],
-                'type' => $file['type'],
+                'type' => static::getFileMimeType($file['tmp_name'] ?: $file['type']),
                 'path' => null,
             ];
         }

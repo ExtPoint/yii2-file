@@ -118,7 +118,8 @@ class PutUploader extends BaseUploader
         );
 
         // Check real mime type from file
-        if (is_array($this->mimeTypes) && !in_array(static::getFileMimeType($filePath), $this->mimeTypes)) {
+        $fileType = static::getFileMimeType($filePath);
+        if (is_array($this->mimeTypes) && !in_array($fileType, $this->mimeTypes)) {
             $this->addError('files', \Yii::t('app', 'Incorrect file format.'));
             return false;
         }
@@ -126,7 +127,7 @@ class PutUploader extends BaseUploader
         // Get in from file, if no exists
         $file['bytesTotal'] = $file['bytesTotal'] ?: filesize($filePath);
         $file['bytesUploaded'] = $file['bytesUploaded'] ?: $file['bytesUploaded'];
-        $file['type'] = $file['type'] ?: filetype($filePath);
+        $file['type'] = $fileType ?: $file['type'];
 
         $this->files[0] = $file;
         return true;
