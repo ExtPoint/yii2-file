@@ -4,6 +4,7 @@ namespace extpoint\yii2\file;
 
 use extpoint\yii2\base\Module;
 use extpoint\yii2\file\models\File;
+use extpoint\yii2\file\models\ImageMeta;
 use extpoint\yii2\file\uploaders\BaseUploader;
 use yii\helpers\ArrayHelper;
 
@@ -142,10 +143,15 @@ class FileModule extends Module
 
             if (!$file->save()) {
                 return [
-                    'errors' => $uploader->getFirstErrors(),
+                    'errors' => $file->getFirstErrors(),
                 ];
             }
 
+            if (!empty($fileConfig['fixedSize']) && !$file->checkImageFixedSize($fileConfig['fixedSize'])) {
+                return [
+                    'errors' => $file->getImageMeta(FileModule::PROCESSOR_NAME_ORIGINAL)->getFirstErrors()
+                ];
+            }
             $files[] = $file;
         }
 

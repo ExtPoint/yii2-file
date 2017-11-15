@@ -15,9 +15,14 @@ class UploadController extends Controller
     public function actionIndex()
     {
         $mimeTypes = \Yii::$app->request->get('mimeTypes');
+        $fixedSize = \Yii::$app->request->get('fixedSize');
+
         $result = FileModule::getInstance()->upload([
             'mimeTypes' => $mimeTypes ? explode(',', $mimeTypes) : null,
+        ], [
+            'fixedSize' => $fixedSize ? explode(',', $fixedSize) : null,
         ]);
+
         if (isset($result['errors'])) {
             return Json::encode([
                 'error' => implode(', ', $result['errors']),
