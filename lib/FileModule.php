@@ -165,15 +165,15 @@ class FileModule extends Module
                 'label' => 'Модуль загрузки и скачивания файла',
                 'visible' => false,
                 'items' => [
-                    [
+                    'upload' => [
                         'url' => ["/$this->id/upload/index"],
                         'urlRule' => "$this->id/upload",
                     ],
-                    [
+                    'upload-editor' => [
                         'url' => ["/file/upload/editor"],
                         'urlRule' => "$this->id/upload/editor",
                     ],
-                    [
+                    'download' => [
                         'url' => ["/file/download/index"],
                         'urlRule' => "$this->id/<uid:[a-z0-9-]{36}>/<name>",
                     ],
