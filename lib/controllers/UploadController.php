@@ -16,12 +16,13 @@ class UploadController extends Controller
     {
         $mimeTypes = \Yii::$app->request->get('mimeTypes');
         $fixedSize = \Yii::$app->request->get('fixedSize');
+        $source = \Yii::$app->request->get('source');
 
         $result = FileModule::getInstance()->upload([
             'mimeTypes' => $mimeTypes ? explode(',', $mimeTypes) : null,
         ], [
             'fixedSize' => $fixedSize ? explode(',', $fixedSize) : null,
-        ]);
+        ], $source);
 
         if (isset($result['errors'])) {
             return Json::encode([

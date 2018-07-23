@@ -13,6 +13,9 @@ class FileModule extends Module
     const PROCESSOR_NAME_ORIGINAL = 'original';
     const PROCESSOR_NAME_DEFAULT = 'default';
 
+    const SOURCE_FILE = 'file';
+    const SOURCE_AMAZONE_S3 = 'amazone_s3';
+
     /**
      * Format is jpg or png
      * @var string
@@ -67,6 +70,13 @@ class FileModule extends Module
      */
     public $processors = [];
 
+    public $prioritySource = 'file';
+
+    /**
+     * @var frostealth\yii2\aws\s3\Service
+     */
+    public $amazoneStorage;
+
     public function init()
     {
         parent::init();
@@ -87,6 +97,23 @@ class FileModule extends Module
             ],
             $this->processors
         );
+
+        // Create aws s3 service
+        if ($this->prioritySource === self::SOURCE_AMAZONE_S3) {
+            $this->amazoneStorage = \Yii::createObject(array_merge(
+                [
+                    'class' => 'frostealth\yii2\aws\s3\Service',
+                    'region' => 'eu-west-1',
+                    'credentials' => [
+                        'key' => '',
+                        'secret' => '',
+                    ],
+                    'defaultBucket' => 'vindog2',
+                    'defaultAcl' => 'public-read',
+                ],
+                $this->amazoneStorage ?: []
+            ));
+        }
 
         // Normalize and set default dir
         if ($this->filesRootPath === null) {
@@ -111,11 +138,16 @@ class FileModule extends Module
     /**
      * @param array $uploaderConfig
      * @param array $fileConfig
-     * @return \extpoint\yii2\file\models\File[]
+     * @param null $source
+     * @return array
+     * @throws \extpoint\yii2\exceptions\ModelSaveException
+     * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function upload($uploaderConfig = [], $fileConfig = [])
+    public function upload($uploaderConfig = [], $fileConfig = [], $source = null)
     {
+        $source = $source ?: $this->prioritySource;
+
         /** @var BaseUploader $uploader */
         $uploader = \Yii::createObject(ArrayHelper::merge([
             'class' => empty($_FILES) ? '\extpoint\yii2\file\uploaders\PutUploader' : '\extpoint\yii2\file\uploaders\PostUploader',
@@ -141,6 +173,11 @@ class FileModule extends Module
                 'fileSize' => $item['bytesTotal'],
             ]);
 
+            if ($source === self::SOURCE_AMAZONE_S3) {
+                $file->sourceType = FileModule::SOURCE_AMAZONE_S3;
+                $this->uploadToAmazoneS3($file);
+            }
+
             if (!$file->save()) {
                 return [
                     'errors' => $file->getFirstErrors(),
@@ -152,10 +189,48 @@ class FileModule extends Module
                     'errors' => $file->getImageMeta(FileModule::PROCESSOR_NAME_ORIGINAL)->getFirstErrors()
                 ];
             }
+
+            if ($source === self::SOURCE_AMAZONE_S3) {
+                if ($file->isImage()) {
+                    $processors = array_keys(FileModule::getInstance()->processors);
+
+                    // Generate and upload thumb images
+                    foreach ($processors as $processor) {
+                        $imageMeta = $file->getImageMeta($processor);
+                        $this->uploadToAmazoneS3($imageMeta);
+                        $imageMeta->saveOrPanic(['amazoneS3Url']);
+                    }
+
+                    // Delete local files
+                    foreach ($processors as $processor) {
+                        unlink($file->getImageMeta($processor)->path);
+                    }
+                } else {
+                    // Delete local files
+                    unlink($file->path);
+                }
+            }
+
             $files[] = $file;
         }
 
         return $files;
+    }
+
+    /**
+     * @param File|ImageMeta $file
+     * @param null $sourcePath
+     */
+    public function uploadToAmazoneS3($file, $sourcePath = null)
+    {
+        ob_start();
+        $this->amazoneStorage
+            ->commands()
+            ->upload($file->fileName, $sourcePath ?: $file->path)
+            ->withContentType($file->fileMimeType)
+            ->execute();
+        $file->amazoneS3Url = $this->amazoneStorage->getUrl($file->fileName);
+        ob_end_clean();
     }
 
     public function coreMenu()
