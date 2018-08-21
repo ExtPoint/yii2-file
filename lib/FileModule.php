@@ -147,11 +147,12 @@ class FileModule extends Module
     public function upload($uploaderConfig = [], $fileConfig = [], $source = null)
     {
         $source = $source ?: $this->prioritySource;
+        $folder = trim(ArrayHelper::getValue($fileConfig, 'folder', ''), '/');
 
         /** @var BaseUploader $uploader */
         $uploader = \Yii::createObject(ArrayHelper::merge([
             'class' => empty($_FILES) ? '\extpoint\yii2\file\uploaders\PutUploader' : '\extpoint\yii2\file\uploaders\PostUploader',
-            'destinationDir' => $this->filesRootPath,
+            'destinationDir' => $this->filesRootPath . ($folder ? '/' . $folder : ''),
             'maxFileSize' => $this->fileMaxSize,
         ], $uploaderConfig));
 
@@ -167,7 +168,7 @@ class FileModule extends Module
             $file->attributes = ArrayHelper::merge($fileConfig, [
                 'uid' => $item['uid'],
                 'title' => $item['title'],
-                'folder' => ArrayHelper::getValue($fileConfig, 'folder')
+                'folder' => ($folder ? '/' . $folder . '/' : '')
                     ?: str_replace([$this->filesRootPath, $item['name']], '', $item['path']),
                 'fileName' => $item['name'],
                 'fileMimeType' => $item['type'],
@@ -225,14 +226,15 @@ class FileModule extends Module
     public function uploadToAmazoneS3($file, $sourcePath = null)
     {
         $folder = trim($file->folder, '/');
+        $fileName = ($folder ? $folder . '/' : '') . $file->fileName;
 
         ob_start();
         $this->amazoneStorage
             ->commands()
-            ->upload(($folder ? $folder . '/' : '') . $file->fileName, $sourcePath ?: $file->path)
+            ->upload($fileName, $sourcePath ?: $file->path)
             ->withContentType($file->fileMimeType)
             ->execute();
-        $file->amazoneS3Url = $this->amazoneStorage->getUrl($file->fileName);
+        $file->amazoneS3Url = $this->amazoneStorage->getUrl($fileName);
         ob_end_clean();
     }
 
