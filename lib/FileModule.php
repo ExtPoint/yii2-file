@@ -167,7 +167,8 @@ class FileModule extends Module
             $file->attributes = ArrayHelper::merge($fileConfig, [
                 'uid' => $item['uid'],
                 'title' => $item['title'],
-                'folder' => str_replace([$this->filesRootPath, $item['name']], '', $item['path']),
+                'folder' => ArrayHelper::getValue($fileConfig, 'folder')
+                    ?: str_replace([$this->filesRootPath, $item['name']], '', $item['path']),
                 'fileName' => $item['name'],
                 'fileMimeType' => $item['type'],
                 'fileSize' => $item['bytesTotal'],
@@ -223,10 +224,12 @@ class FileModule extends Module
      */
     public function uploadToAmazoneS3($file, $sourcePath = null)
     {
+        $folder = trim($file->folder, '/');
+
         ob_start();
         $this->amazoneStorage
             ->commands()
-            ->upload($file->fileName, $sourcePath ?: $file->path)
+            ->upload(($folder ? $folder . '/' : '') . $file->fileName, $sourcePath ?: $file->path)
             ->withContentType($file->fileMimeType)
             ->execute();
         $file->amazoneS3Url = $this->amazoneStorage->getUrl($file->fileName);

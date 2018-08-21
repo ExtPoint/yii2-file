@@ -22,6 +22,7 @@ class UploadController extends Controller
             'mimeTypes' => $mimeTypes ? explode(',', $mimeTypes) : null,
         ], [
             'fixedSize' => $fixedSize ? explode(',', $fixedSize) : null,
+            'folder' => \Yii::$app->request->get('folder'),
         ], $source);
 
         if (isset($result['errors'])) {
