@@ -3,9 +3,9 @@
 namespace extpoint\yii2\file\processors;
 
 use extpoint\yii2\file\FileException;
-use yii\base\Object;
+use yii\base\BaseObject;
 
-class BaseFileProcessor extends Object
+class BaseFileProcessor extends BaseObject
 {
     public $filePath;
 
